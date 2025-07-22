@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Emotion  face Detection </title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            background: linear-gradient(to right, #f5f7fa, #c3cfe2);
+            text-align: center;
+            padding: 40px;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            color: #333;
+        }
+
+        .container {
+            max-width: 500px;
+            margin: auto;
+            padding: 30px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+
+        #imageUpload {
+            margin: 20px 0;
+        }
+
+        #uploadedImage {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        #label-container p {
+            font-size: 1.2rem;
+            background-color: #eee;
+            margin: 5px;
+            padding: 10px;
+            border-radius: 6px;
+            box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+        }
+
+        .footer {
+            margin-top: 30px;
+            font-size: 0.9rem;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@3.3.0"></script>
+
+    <!-- Then Teachable Machine library -->
+    <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@0.8/dist/teachablemachine-image.min.js"></script>
+    <div class="container">
+        <h1> Emotion face detection </h1>
+        <p>Select an image to classify</p>
+        <input type="file" id="imageUpload" accept="image/*" />
+        <img id="uploadedImage" src="#" alt="Your Image" style="display:none;" />
+        <div id="label-container"></div>
+    </div>
+
+    <div class="footer">
+        Made with ❤️ using Teachable Machine & Flask
+    </div>
+
+    <!-- Teachable Machine Library -->
+    <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@0.8/dist/teachablemachine-image.min.js"></script>
+    
+    <script type="text/javascript">
+        const URL = "/static/model/";
+        let model, labelContainer;
+
+        async function init() {
+            const modelURL = URL + "model.json";
+            const metadataURL = URL + "metadata.json";
+            model = await tmImage.load(modelURL, metadataURL);
+            labelContainer = document.getElementById("label-container");
+        }
+
+        async function predict() {
+            const image = document.getElementById("uploadedImage");
+            const prediction = await model.predict(image);
+            labelContainer.innerHTML = "";
+
+            prediction.forEach(p => {
+                const pElement = document.createElement("p");
+                pElement.innerText = `${p.className}: ${(p.probability * 100).toFixed(2)}%`;
+                labelContainer.appendChild(pElement);
+            });
+        }
+
+        window.addEventListener("load", init);
+
+        document.getElementById("imageUpload").addEventListener("change", function (event) {
+            const file = event.target.files[0];
+            const reader = new FileReader();
+
+            reader.onload = function (e) {
+                const img = document.getElementById("uploadedImage");
+                img.style.display = "block";
+                img.src = e.target.result;
+                img.onload = () => {
+                    predict();
+                };
+            };
+            reader.readAsDataURL(file);
+        });
+    </script>
+</body>
+</html>
